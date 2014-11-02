@@ -5,11 +5,11 @@ Hello everybody,
 
 Next saturday is the start of Glow. And the route happens to go right in front of my appartment.
 
-![image](route.png =400x)
+<img src="route.png" width="400">
 
 It would be a shame to waste this unique opportunity, so I want to install a mini art installation in the Dommelstraat. My idea is to project an interactive toy on the street. It detects people walking by with a Kinect and then draws something cool where they stand.
 
-![image](location.png =600x)
+<img src="location.png" width="600">
 
 We have very little time and a lot to do. We still need:
 
