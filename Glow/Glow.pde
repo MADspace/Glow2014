@@ -9,9 +9,19 @@
   - Arrow keys (left, right, up, down) move selected corner's position (you can also use mouse for that)  
 */
 
+import org.openkinect.*;
+import org.openkinect.processing.*;
+
 String configFile = "quads.txt";
 ProjectedQuads projectedQuads;
 PGraphics main;
+
+Kinect kinect;
+
+// Size of kinect image
+int w = 640;
+int h = 480;
+float[] depthLookUp = new float[2048];
 
 void setup() {
   size(800, 600, P3D);
@@ -19,7 +29,12 @@ void setup() {
   projectedQuads = new ProjectedQuads();  
   projectedQuads.load(configFile);  
   main = createGraphics(800, 600, P2D);
-  projectedQuads.getQuad(0).setTexture(main); 
+  projectedQuads.getQuad(0).setTexture(main);
+ 
+  kinect = new Kinect(this);
+  kinect.start();
+  kinect.enableDepth(true); 
+ 
 }
 
 void draw() {
@@ -27,19 +42,7 @@ void draw() {
   
   //animation code is here
   main.beginDraw();
-  main.background(0, 00255);
-  main.stroke(255);
-  main.strokeWeight(10);
-  main.noFill();
-  main.rect(0, 0, main.width, main.height);
-  main.noStroke();
-  main.strokeWeight(3);
-  main.fill(255);
-  float[] speeds = {1, 1.25, 1.5, 2.0, 2.5, 3};
-  for(int i=0; i<speeds.length; i++) {
-    float x = main.width * (0.5 + 0.5*sin(frameCount/100.0*speeds[i]));
-    main.rect(x, 0, 10*speeds[i], main.height);  
-  }
+  main.image(kinect.getDepthImage(), 0, 0, 800, 600);
   main.endDraw();
   
   //draw projected quads on the screen
