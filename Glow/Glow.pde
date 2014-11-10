@@ -12,6 +12,7 @@
 import org.openkinect.*;
 import org.openkinect.processing.*;
 import gab.opencv.*;
+import java.lang.reflect.Field;
 
 String configFile = "quads.txt";
 ProjectedQuads projectedQuads;
@@ -22,20 +23,20 @@ OpenCV opencv;
 HScrollbar rangeClose, rangeFar;
 
 boolean debug = true;
-boolean kalibrate = true;
+boolean kalibrate = false;
 PImage mask;
 
- public int sketchWidth() {
-    return displayWidth;
-  }
+public int sketchWidth() {
+  return displayWidth;
+}
 
-  public int sketchHeight() {
-    return displayHeight;
-  }
+public int sketchHeight() {
+  return displayHeight;
+}
 
-  public String sketchRenderer() {
-    return P3D; 
-  }
+public String sketchRenderer() {
+  return P3D; 
+}
 
 
 boolean sketchFullScreen() {
@@ -52,12 +53,11 @@ void setup() {
   main = createGraphics(main_width, main_height, P2D);
   
   projectedQuads.getQuad(0).setTexture(main);
-  projectedQuads.getQuad(1).setTexture(createGraphics(1, 1, P2D));
+ 
  
   kinect = new Kinect(this);
   kinect.start();
   kinect.enableDepth(true);
-  kinect.enableRGB(true);  
  
   opencv = new OpenCV(this, main_width, main_height);
   
@@ -89,7 +89,6 @@ void draw() {
   if(!debug)
     k.mask(mask);
   
-  
   src.blend(k, 0, 0, 640, 480, 0, 0, main_width, main_height, BLEND);
   
   
@@ -98,21 +97,19 @@ void draw() {
   background(0);
   main.beginDraw();
   
-  
   opencv.loadImage(src);
   opencv.blur(20);
   opencv.inRange(near, far);
   
   if(debug) {
     
-    
     if(kalibrate) {
       main.background(0, 0);
-      main.image(kinect.getVideoImage().get(), 0, 0, displayWidth, displayHeight);
+      //main.image(kinect.getVideoImage().get(), 0, 0, displayWidth, displayHeight);
       
     } else {
       //main.image(src, 0, 0, main_width, main_height);
-    //main.image(opencv.getSnapshot(), 0, 0, main_width, main_height);
+      //main.image(opencv.getSnapshot(), 0, 0, main_width, main_height);
       main.image(opencv.getSnapshot(), 0, 0, main_width, main_height);
   }
     
@@ -153,7 +150,7 @@ void draw() {
       main.colorMode(HSB, 255);
       
       main.stroke(s.r, s.g, s.b, s.a);
-      main.hint(ENABLE_STROKE_PURE);
+      //main.hint(ENABLE_STROKE_PURE);
       
       for(Contour c : contours) {
         main.beginShape();
@@ -170,20 +167,17 @@ void draw() {
   projectedQuads.draw();
   
   if(debug) {
-        rangeClose.update();
+    rangeClose.update();
     rangeFar.update();
     rangeClose.display();
     rangeFar.display();
     
-        fill(255, 0, 0);
+    fill(255, 0, 0);
     textSize(10);
     text(near + " near", 300, 50);
     text(far + " far", 350, 50);
   }
-  
-  
-  
-  
+
 }
 
 void keyPressed() {
@@ -191,9 +185,29 @@ void keyPressed() {
     debug = !debug;
   }
   if(key == 'k') {
-    kalibrate = !kalibrate;
+    resetKinect();
   }
   projectedQuads.keyPressed();
+}
+
+void resetKinect() {
+  kinect.quit();
+  try {
+    kinect.join();
+    Field f = kinect.getClass().getDeclaredField("device"); //NoSuchFieldException
+    f.setAccessible(true);
+    Device d = (Device)f.get(kinect);
+    d.dispose();
+    
+    Thread.sleep(2000);
+
+  } catch(Exception e) {
+    e.printStackTrace();
+  }
+
+  kinect = new Kinect(this);
+  kinect.start();
+  kinect.enableDepth(true);
 }
 
 void mousePressed() {
